@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Weather Application</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <div class="navbar-header">  <a class="navbar-brand" href="#"> Weather Application </a>
+        </div></div></nav>
+	
+	<hr/>
+	<div class="dropdown">
+	<button class="btn btn-secondary dropdown-toggle" 
+		type="button" 
+		id="dropdownMenuButton" 
+		data-toggle="dropdown" 
+		aria-haspopup="true" aria-expanded=false>
+    Select City
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" href="#">Campbell, CA</a>
+    <a class="dropdown-item" href="#">Omaha, NE</a>
+    <a class="dropdown-item" href="#">Austin, TX</a>
+    <a class="dropdown-item" href="#">Niseko, Japan</a>
+    <a class="dropdown-item" href="#">Nara, Japan</a>
+    <a class="dropdown-item" href="#">Jakarta, Indonesia</a>
+  </div>
+</div>
+	
+	<table class="table table-striped" th:with="counter=0">
+	    <thead>
+	        <tr>
+	        	<th scope="col"> No </th>
+	        	<th scope="col"> Location </th>
+	        	<th scope="col"> Latitude </th>
+	        	<th scope="col"> Longitude </th>
+	        	<th scope="col"> TimeZone </th>
+	        	<th scope="col"> Recorded Time </th>
+	        	<th scope="col"> Summary </th>
+	        	<th scope="col"> Precipitation Probability </th>
+	        	<th scope="col"> Temperature </th>
+	        	<th scope="col"> Humidity </th>
+	        	<th scope="col"> UvIndex </th>
+	        	<th scope="col"> Cloud Cover </th>
+	        	<th scope="col"> WindSpeed </th>
+	        	<th scope="col"> Visibility </th>
+	        </tr>
+	    </thead>
+	    <tbody>
+	    
+	    <tr th:if="${weatherData==null}">
+	            <td colspan="2"> No weather information is available </td>
+	        </tr>
+	        <div th:each="rowdataMap, iterStat : ${weatherData}">
+	        <tr th:each="data : ${rowdataMap}" >
+	        	<th scope="row" th:with="counter=${counter + 1}" th:text="${iterStat.index+1}"></th>
+	        	<td><span th:text="${data.key.address}"> address </span></td>
+	            <td><span th:text="${data.value.latitude}"> Latitude </span></td>
+	            <td><span th:text="${data.value.longitude}"> Longitude </span></td>
+	            <td><span th:text="${data.value.timezone}"> TimeZone </span></td>
+	            <td><span th:text="${data.value.recordedTime}"> Recorded Time </span></td>
+	            <td><span th:text="${data.value.summary}"> Summary </span></td>
+	            <td><span th:text="${data.value.precipProbability}"> Precipitation Probability </span></td>
+	            <td><span th:text="${data.value.temperature}"> Temperature </span></td>
+	            <td><span th:text="${data.value.humidity}"> Humidity </span></td>
+	            <td><span th:text="${data.value.uvIndex}"> UvIndex </span></td>
+	            <td><span th:text="${data.value.cloudCover}"> Cloud Cover </span></td>
+	            <td><span th:text="${data.value.windSpeed}"> WindSpeed </span></td>
+	            <td><span th:text="${data.value.visibility}"> Visibility </span></td>
+	        </tr>
+	        </div>
+	    </tbody>
+	    
+	</table>
+
+</body>
+</html>
