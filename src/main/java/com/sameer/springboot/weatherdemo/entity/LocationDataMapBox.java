@@ -7,17 +7,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "location_data_mapbox")
-@CompoundIndex(def = "{'latitude':1, 'longitude':-1}", name = "compound_index", unique = true)
+@CompoundIndex(def = "{'placename':1, 'isocountrycode':-1}", name = "compound_index", unique = true)
 public class LocationDataMapBox {
 	
 	@Id
 	private String Id;
 	
-	private String placeName;
-	
-	@Field("ISOCountryCode")
-	private String iSOCountryCode;
-	
+	private String placename;
+	private String isocountrycode;
 	private String countryName;
 	private float relevance;
 	private float latitude;
@@ -34,12 +31,12 @@ public class LocationDataMapBox {
 		Id = id;
 	}
 
-	public String getPlaceName() {
-		return placeName;
+	public String getPlacename() {
+		return placename;
 	}
 
-	public void setPlaceName(String placeName) {
-		this.placeName = placeName;
+	public void setPlacename(String placename) {
+		this.placename = placename;
 	}
 
 	public float getRelevance() {
@@ -74,12 +71,12 @@ public class LocationDataMapBox {
 		this.address = address;
 	}
 
-	public String getISOCountryCode() {
-		return iSOCountryCode;
+	public String getIsocountrycode() {
+		return isocountrycode;
 	}
 
-	public void setISOCountryCode(String iSOCountryCode) {
-		this.iSOCountryCode = iSOCountryCode;
+	public void setIsocountrycode(String isocountrycode) {
+		this.isocountrycode = isocountrycode;
 	}
 
 	public String getCountryName() {

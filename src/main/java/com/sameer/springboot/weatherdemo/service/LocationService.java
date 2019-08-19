@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,8 +49,9 @@ public class LocationService {
 		locationDataMapBox.setAddress(updateLocationDataMapBox.getAddress());
 		locationDataMapBox.setLatitude(updateLocationDataMapBox.getLatitude());
 		locationDataMapBox.setLongitude(updateLocationDataMapBox.getLongitude());
-		locationDataMapBox.setPlaceName(updateLocationDataMapBox.getPlaceName());
+		locationDataMapBox.setPlacename(updateLocationDataMapBox.getPlacename());
 		locationDataMapBox.setRelevance(updateLocationDataMapBox.getRelevance());
+		locationDataMapBox.setIsocountrycode(updateLocationDataMapBox.getIsocountrycode());
 		return locationRepository.save(locationDataMapBox);
 	}
 	
@@ -60,26 +62,30 @@ public class LocationService {
     }
 	
 	public List<LocationDataMapBox> searchByPlaceName(String placeName) {
-        List<LocationDataMapBox> result = (List<LocationDataMapBox>) locationRepository.findByPlaceName(placeName).stream()
-        		.filter(Optional::isPresent)
-        		.map(Optional::get)
-        		.collect(Collectors.toList());
+		List<LocationDataMapBox> result = new ArrayList<LocationDataMapBox>();
+        result = locationRepository.findAll();
+        result.stream().filter(p -> placeName.equalsIgnoreCase(p.getPlacename())).collect(Collectors.toList());
         return result;
     }
 	
 	public List<LocationDataMapBox> searchByPlaceNameAndISOCountryCode(String placeName , String ISOCountryCode) {
-        List<LocationDataMapBox> result = (List<LocationDataMapBox>) locationRepository.findByPlaceNameAndISOCountryCode(placeName, ISOCountryCode).stream()
-        		.filter(Optional::isPresent)
-        		.map(Optional::get)
-        		.collect(Collectors.toList());
+        List<LocationDataMapBox> result = new ArrayList<LocationDataMapBox>();
+        result = locationRepository.findAll();
+        result = result.stream().filter(p -> placeName.equalsIgnoreCase(p.getPlacename())).collect(Collectors.toList());
         return result;
     }
 	
-	public InputStream retrieve(String ISOCountryCode, String placeName) throws Exception {
-	    String url = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + URLEncoder.encode(placeName, "UTF-8") + ".json?country="+ISOCountryCode+"&types=place&access_token=" + access_token;
-	    URLConnection connection = new URL(url).openConnection();
+	public InputStream retrieve(String ISOCountryCode, String placeName) {
+	    try {
+	    	String url = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + URLEncoder.encode(placeName, "UTF-8") + ".json?country="+ISOCountryCode+"&types=place&language=en&access_token=" + access_token;
+		    
+	    	URLConnection connection = new URL(url).openConnection();
 
 	    return connection.getInputStream();
+	    } catch(Exception ex) {
+	    	throw new ResourceNotFoundException();
+	    }
+	    
 	  }
 	
 	public LocationDataMapBox getLocation(String ISOCountryCode, String placeName) throws IOException, Exception {
@@ -93,9 +99,15 @@ public class LocationService {
 			JsonNode node = mapper.readTree(retrieve(ISOCountryCode, placeName));
 			LocationDataMapBox location = new LocationDataMapBox();
 			location.setAddress(node.path("features").get(0).path("place_name").asText());
-		    location.setLatitude(node.path("features").get(0).path("center").get(0).floatValue());
-		    location.setLongitude(node.path("features").get(0).path("center").get(1).floatValue());
-		    location.setPlaceName(node.path("features").get(0).path("place_name").asText());
+			
+			DecimalFormat form = new DecimalFormat();
+			form.setMaximumFractionDigits(4);
+			float latitude = node.path("features").get(0).path("center").get(0).floatValue();
+			float longitude = node.path("features").get(0).path("center").get(1).floatValue();
+			
+		    location.setLatitude(Float.valueOf(form.format(latitude)));
+		    location.setLongitude(Float.valueOf(form.format(longitude)));
+		    location.setPlacename(node.path("features").get(0).path("text").asText());
 		    for (JsonNode objNode : node.path("features").get(0).path("context")){
 		    	if( objNode.path("id").asText().startsWith("country")) {
 		    		countryName  = objNode.path("text").asText(); 
@@ -104,9 +116,9 @@ public class LocationService {
 		    }
 		    
 		    location.setCountryName(countryName);
-		    location.setISOCountryCode(getISOCountry(countryName));
+		    location.setIsocountrycode(getISOCountry(countryName));
 		    location.setRelevance(node.path("features").get(0).path("relevance").floatValue());
-		    //add(location);
+		    add(location);
 		    
 			return location;
 		}

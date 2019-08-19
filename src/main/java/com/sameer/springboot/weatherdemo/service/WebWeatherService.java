@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -64,7 +68,8 @@ public class WebWeatherService {
     
     public List<WeatherDataDarksky> searchByLatitudeAndLongitudeOrderByRecordedTimeDesc(float latitude, float longitude) {
         List<WeatherDataDarksky> result = new ArrayList<>();
-        result = weatherDataDarkskyRepository.findByLatitudeAndLongitudeOrderByRecordedTimeDesc(latitude, longitude);
+        result = weatherDataDarkskyRepository.findAll();
+        result = result.stream().filter(p -> latitude == p.getLongitude()).filter(p-> longitude == p.getLatitude()).sorted(Comparator.comparing(WeatherDataDarksky::getRecordedTime).reversed()).collect(Collectors.toList());
         return result;
     }
 	
@@ -90,12 +95,18 @@ public class WebWeatherService {
 	    
 	    weatherDataDarksky.setCloudCover(node.path("currently").path("cloudCover").floatValue());
 		weatherDataDarksky.setHumidity(node.path("currently").path("humidity").floatValue());
-		weatherDataDarksky.setLatitude(node.path("latitude").floatValue());
-		weatherDataDarksky.setLongitude(node.path("longitude").floatValue());
+		
+		DecimalFormat form = new DecimalFormat();
+		form.setMaximumFractionDigits(4);
+		float latitude = node.path("latitude").floatValue();
+		float longitude = node.path("longitude").floatValue();
+		
+		weatherDataDarksky.setLatitude(Float.valueOf(form.format(latitude)));
+		weatherDataDarksky.setLongitude(Float.valueOf(form.format(longitude)));
 		weatherDataDarksky.setPrecipProbability(node.path("currently").path("precipProbability").floatValue());
 		weatherDataDarksky.setSummary(node.path("currently").path("summary").asText());
 		weatherDataDarksky.setTemperature(node.path("currently").path("temperature").floatValue());
-		weatherDataDarksky.setRecordedTime(new Date(node.path("currently").path("time").asLong()));
+		weatherDataDarksky.setRecordedTime(new Date());
 		weatherDataDarksky.setTimezone(node.path("timezone").asText());
 		weatherDataDarksky.setUvIndex(node.path("currently").path("uvIndex").floatValue());
 		weatherDataDarksky.setVisibility(node.path("currently").path("visibility").floatValue());
